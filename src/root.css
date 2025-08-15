@@ -323,3 +323,20 @@ html, body, #root {
 }
 
 a { color: var(--link); }
+
+.chip {
+  border: 1px solid var(--border, #2a2a2a);
+  background: var(--card, #151517);
+  color: var(--text);
+  padding: 0.5rem 0.75rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease, background .15s ease, border-color .15s ease;
+  user-select: none;
+}
+.chip:hover { transform: translateY(-1px); }
+.chip[data-active="true"] {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow);
+}
+.muted { color: var(--muted); }

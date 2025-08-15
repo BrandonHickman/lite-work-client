@@ -5,6 +5,7 @@ import Workouts from "./pages/Workouts";
 import CreateWorkout from "./pages/CreateWorkout";
 import WorkoutSession from "./pages/WorkoutSession";
 import Navbar from "./components/Navbar";
+import ProtectedRoute from "./components/ProtectedRoutes";
 
 export default function App() {
   return (
@@ -12,12 +13,27 @@ export default function App() {
       <Navbar />
       <main className="container page-content">
         <Routes>
+          {/* Public */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/workouts" element={<Workouts />} />
-          <Route path="/workouts/create" element={<CreateWorkout />} />
-          <Route path="/workouts/:id" element={<WorkoutSession />} />
-          <Route path="/profile" element={<div className="page-card"><h2>Profile</h2></div>} />
+
+          {/* Protected */}
+          <Route path="/workouts" element={
+            <ProtectedRoute><Workouts /></ProtectedRoute>
+          } />
+          <Route path="/workouts/create" element={
+            <ProtectedRoute><CreateWorkout /></ProtectedRoute>
+          } />
+          <Route path="/workouts/:id" element={
+            <ProtectedRoute><WorkoutSession /></ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <div className="page-card"><h2>Profile</h2></div>
+            </ProtectedRoute>
+          } />
+
+          {/* Default */}
           <Route path="*" element={<Login />} />
         </Routes>
       </main>
