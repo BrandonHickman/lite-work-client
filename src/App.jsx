@@ -6,6 +6,8 @@ import CreateWorkout from "./pages/CreateWorkout";
 import WorkoutSession from "./pages/WorkoutSession";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoutes";
+import Profile from "./pages/Profile";
+import EditWorkout from "./pages/EditWorkout.jsx";
 
 export default function App() {
   return (
@@ -13,27 +15,50 @@ export default function App() {
       <Navbar />
       <main className="container page-content">
         <Routes>
-          {/* Public */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Protected */}
-          <Route path="/workouts" element={
-            <ProtectedRoute><Workouts /></ProtectedRoute>
-          } />
-          <Route path="/workouts/create" element={
-            <ProtectedRoute><CreateWorkout /></ProtectedRoute>
-          } />
-          <Route path="/workouts/:id" element={
-            <ProtectedRoute><WorkoutSession /></ProtectedRoute>
-          } />
-          <Route path="/profile" element={
-            <ProtectedRoute>
-              <div className="page-card"><h2>Profile</h2></div>
-            </ProtectedRoute>
-          } />
+          <Route
+            path="/workouts"
+            element={
+              <ProtectedRoute>
+                <Workouts />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/workouts/create"
+            element={
+              <ProtectedRoute>
+                <CreateWorkout />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/workouts/:id"
+            element={
+              <ProtectedRoute>
+                <WorkoutSession />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/workouts/:id/edit"
+            element={
+              <ProtectedRoute>
+                <EditWorkout />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* Default */}
           <Route path="*" element={<Login />} />
         </Routes>
       </main>

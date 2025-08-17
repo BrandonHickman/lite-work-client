@@ -1,12 +1,25 @@
-import { fetchWithResponse } from "./fetcher";
+import { fetchWithoutResponse, fetchWithResponse } from "./fetcher";
 
-export function getWorkoutExercises(workoutId) {
-  return fetchWithResponse(`/workout-exercises?workout=${workoutId}`);
+export function listWorkoutExercises(workoutId) {
+  return fetchWithResponse(`workout-exercises?workout=${workoutId}`);
 }
 
+
+export function getWorkoutExercise(id) {
+  return fetchWithResponse(`workout-exercises/${id}`);
+}
+
+
 export function updateWorkoutExercise(id, payload) {
-  return fetchWithResponse(`/workout-exercises/${id}`, {
+  return fetchWithResponse(`workout-exercises/${id}`, {
     method: "PATCH",
     body: JSON.stringify(payload),
+  });
+}
+
+
+export function deleteWorkoutExercise(id) {
+  return fetchWithoutResponse(`workout-exercises/${id}`, {
+    method: "DELETE",
   });
 }

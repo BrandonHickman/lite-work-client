@@ -8,7 +8,7 @@ export function getExercisesByMuscles(ids = []) {
 }
 
 export function getMuscleGroups() {
-  return fetchWithResponse("/muscle-groups");
+  return fetchWithResponse("muscle-groups");
 }
 
 export function getExercisesByMuscleGroups(ids = []) {

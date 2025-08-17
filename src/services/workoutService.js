@@ -1,4 +1,4 @@
-import { fetchWithResponse } from "./fetcher";
+import { fetchWithoutResponse, fetchWithResponse } from "./fetcher";
 
 export function getWorkouts() {
   return fetchWithResponse("workouts");
@@ -28,4 +28,18 @@ export function addExercisesToWorkout(workoutId, exerciseIds) {
     method: "POST",
     body: JSON.stringify({ exercise_ids: exerciseIds }),
   });
+}
+
+export function deleteWorkout(id) {
+  return fetchWithoutResponse(`workouts/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function repeatWorkout(id) {
+  return fetchWithResponse(`workouts/${id}/repeat`, { method: "POST" });
+}
+
+export function getWorkoutMuscleGroups(workoutId) {
+  return fetchWithResponse(`workouts/${workoutId}/muscle-groups`);
 }

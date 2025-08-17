@@ -2,10 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MuscleSelection from "../components/MuscleSelection";
 import { getExercisesByMuscles } from "../services/exerciseService";
-import {
-  createWorkout,
-  addExercisesToWorkout,
-} from "../services/workoutService";
+import { createWorkout, addExercisesToWorkout } from "../services/workoutService";
 import { updateWorkoutExercise } from "../services/workoutExerciseService.js";
 
 export default function CreateWorkout() {
@@ -61,38 +58,37 @@ export default function CreateWorkout() {
   const pickedList = useMemo(() => Object.entries(picked), [picked]);
 
   const onSubmit = async (e) => {
-  e.preventDefault();
-  if (!title.trim()) {
-    return alert("Please give your workout a title.");
-  }
+    e.preventDefault();
 
-  if (pickedList.length === 0) {
-    return alert("Pick at least one exercise before creating the workout.");
-  }
+    if (!title.trim()) {
+      alert("Please give your workout a title.");
+      return;
+    }
+    if (pickedList.length === 0) {
+      alert("Pick at least one exercise before creating the workout.");
+      return;
+    }
 
-  // 1) Create workout
-  const workout = await createWorkout({
-    title,
-    date,
-    description,
-    workout_type: 1,
-    duration_minutes: 0,
-  });
+    const workout = await createWorkout({
+      title,
+      date,
+      description,
+      workout_type: 1,
+      duration_minutes: 0,
+    });
 
-  // 2) Create rows by exercise IDs (backend assigns positions)
-  const selectedExerciseIds = pickedList.map(([exerciseId]) => Number(exerciseId));
-  if (selectedExerciseIds.length) {
-    const createdRows = await addExercisesToWorkout(workout.id, selectedExerciseIds);
+    const selectedExerciseIds = pickedList.map(([exerciseId]) => Number(exerciseId));
 
-    const cfgByExerciseId = Object.fromEntries(
-      pickedList.map(([id, cfg]) => [Number(id), cfg])
-    );
+    if (selectedExerciseIds.length) {
+      const createdRows = await addExercisesToWorkout(workout.id, selectedExerciseIds);
 
-    // 3) PATCH each row with sets/reps/weight/duration you gathered in the form
-    await Promise.all(
-      (createdRows || []).map((row) => {
+      const cfgByExerciseId = Object.fromEntries(
+        pickedList.map(([id, cfg]) => [Number(id), cfg])
+      );
+
+      for (const row of createdRows || []) {
         const cfg = cfgByExerciseId[row.exercise];
-        if (!cfg) return Promise.resolve();
+        if (!cfg) continue;
 
         const payload = {
           sets: cfg.sets ? Number(cfg.sets) : null,
@@ -104,14 +100,13 @@ export default function CreateWorkout() {
               ? Number(cfg.duration_seconds)
               : null,
         };
-        return updateWorkoutExercise(row.id, payload);
-      })
-    );
-  }
 
-  // 4) Navigate to the session page
-  nav(`/workouts/${workout.id}`);
-};
+        await updateWorkoutExercise(row.id, payload);
+      }
+    }
+
+    nav(`/workouts/${workout.id}`);
+  };
 
   return (
     <div className="container page-content">
@@ -166,17 +161,10 @@ export default function CreateWorkout() {
                 {exercises.map((ex) => {
                   const active = !!picked[ex.id];
                   return (
-                    <div
-                      key={ex.id}
-                      className="page-card"
-                      style={{ padding: "1rem" }}
-                    >
+                    <div key={ex.id} className="page-card" style={{ padding: "1rem" }}>
                       <div className="flex justify-between items-center mb-2">
                         <div>
-                          <div
-                            className="text-base"
-                            style={{ fontWeight: 700 }}
-                          >
+                          <div className="text-base" style={{ fontWeight: 700 }}>
                             {ex.name}
                           </div>
                           <div className="text-sm muted">{ex.category}</div>
@@ -197,9 +185,7 @@ export default function CreateWorkout() {
                               inputMode="numeric"
                               placeholder="Sets"
                               value={picked[ex.id]?.sets ?? ""}
-                              onChange={(e) =>
-                                onChangeField(ex.id, "sets", e.target.value)
-                              }
+                              onChange={(e) => onChangeField(ex.id, "sets", e.target.value)}
                               style={{ maxWidth: 90 }}
                             />
                             <input
@@ -207,9 +193,7 @@ export default function CreateWorkout() {
                               inputMode="numeric"
                               placeholder="Reps"
                               value={picked[ex.id]?.reps ?? ""}
-                              onChange={(e) =>
-                                onChangeField(ex.id, "reps", e.target.value)
-                              }
+                              onChange={(e) => onChangeField(ex.id, "reps", e.target.value)}
                               style={{ maxWidth: 90 }}
                             />
                             <input
@@ -217,9 +201,7 @@ export default function CreateWorkout() {
                               inputMode="decimal"
                               placeholder="Weight"
                               value={picked[ex.id]?.weight ?? ""}
-                              onChange={(e) =>
-                                onChangeField(ex.id, "weight", e.target.value)
-                              }
+                              onChange={(e) => onChangeField(ex.id, "weight", e.target.value)}
                               style={{ maxWidth: 120 }}
                             />
                           </div>
@@ -231,11 +213,7 @@ export default function CreateWorkout() {
                               placeholder="Duration"
                               value={picked[ex.id]?.duration_seconds ?? ""}
                               onChange={(e) =>
-                                onChangeField(
-                                  ex.id,
-                                  "duration_seconds",
-                                  e.target.value
-                                )
+                                onChangeField(ex.id, "duration_seconds", e.target.value)
                               }
                             />
                           </div>
