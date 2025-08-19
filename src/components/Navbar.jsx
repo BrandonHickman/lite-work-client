@@ -1,4 +1,4 @@
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { logout } from "../services/authService";
 import "./Navbar.css";
@@ -11,7 +11,6 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
-
   useEffect(() => {
     const saved = localStorage.getItem("theme") || "light";
     setTheme(saved);
@@ -19,11 +18,10 @@ export default function Navbar() {
     setToken(localStorage.getItem("token") || null);
   }, []);
 
-
   useEffect(() => {
     const sync = () => setToken(localStorage.getItem("token") || null);
     window.addEventListener("auth-changed", sync);
-    window.addEventListener("storage", sync); 
+    window.addEventListener("storage", sync);
     window.addEventListener("focus", sync);
     return () => {
       window.removeEventListener("auth-changed", sync);
@@ -32,15 +30,14 @@ export default function Navbar() {
     };
   }, []);
 
-
   useEffect(() => {
     setToken(localStorage.getItem("token") || null);
   }, [location]);
 
-
   useEffect(() => {
     function onClick(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+      if (menuRef.current && !menuRef.current.contains(e.target))
+        setMenuOpen(false);
     }
     if (menuOpen) document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);
@@ -62,24 +59,50 @@ export default function Navbar() {
   return (
     <header className="nav">
       <div className="nav__inner">
-        <NavLink to="/workouts" className="nav__brand">LiteWork</NavLink>
+        {/* Brand */}
+        <Link to="/" className="nav__brand">
+          LiteWork
+        </Link>
 
+        {/* Left-side links (only when logged in) */}
+        {token && (
+          <div className="nav__leftlinks">
+            <NavLink to="/workouts" className="nav__link">
+              Workouts
+            </NavLink>
+            <NavLink to="/my-workouts" className="nav__link">
+              My Workouts
+            </NavLink>
+          </div>
+        )}
+
+        {/* Right-side controls */}
         <nav className="nav__right">
-          <button className="nav__iconbtn" onClick={toggleTheme} title="Toggle theme">
+          <button
+            className="nav__iconbtn"
+            onClick={toggleTheme}
+            title="Toggle theme"
+          >
             {theme === "light" ? "🌞" : "🌙"}
           </button>
-          <button className="nav__iconbtn" title="Notifications">🔔</button>
+          <button className="nav__iconbtn" title="Notifications">
+            🔔
+          </button>
 
           {!token ? (
             <>
-              <NavLink to="/login" className="nav__link">Login</NavLink>
-              <NavLink to="/register" className="nav__link">Register</NavLink>
+              <NavLink to="/login" className="nav__link">
+                Login
+              </NavLink>
+              <NavLink to="/register" className="nav__link">
+                Register
+              </NavLink>
             </>
           ) : (
             <div className="profile" ref={menuRef}>
               <button
                 className="profile__btn"
-                onClick={() => setMenuOpen(v => !v)}
+                onClick={() => setMenuOpen((v) => !v)}
                 aria-expanded={menuOpen}
                 aria-haspopup="menu"
                 title="Profile"
@@ -88,7 +111,11 @@ export default function Navbar() {
               </button>
               {menuOpen && (
                 <div className="profile__menu" role="menu">
-                  <NavLink to="/profile" className="profile__item" onClick={() => setMenuOpen(false)}>
+                  <NavLink
+                    to="/profile"
+                    className="profile__item"
+                    onClick={() => setMenuOpen(false)}
+                  >
                     View Profile
                   </NavLink>
                   <button className="profile__item" onClick={handleLogout}>

@@ -7,8 +7,7 @@ import { updateWorkoutExercise } from "../services/workoutExerciseService.js";
 
 export default function CreateWorkout() {
   const nav = useNavigate();
-
-  // workout form
+  
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [description, setDescription] = useState("");
@@ -180,15 +179,15 @@ export default function CreateWorkout() {
                       {active && (
                         <div className="grid grid-cols-1 gap-2 mt-2">
                           <div className="flex gap-2">
-                            <input
+                            {/* <input
                               className="input"
                               inputMode="numeric"
                               placeholder="Sets"
                               value={picked[ex.id]?.sets ?? ""}
                               onChange={(e) => onChangeField(ex.id, "sets", e.target.value)}
                               style={{ maxWidth: 90 }}
-                            />
-                            <input
+                            /> */}
+                            {/* <input
                               className="input"
                               inputMode="numeric"
                               placeholder="Reps"
@@ -203,11 +202,11 @@ export default function CreateWorkout() {
                               value={picked[ex.id]?.weight ?? ""}
                               onChange={(e) => onChangeField(ex.id, "weight", e.target.value)}
                               style={{ maxWidth: 120 }}
-                            />
+                            /> */}
                           </div>
 
                           <div>
-                            <input
+                            {/* <input
                               className="input"
                               inputMode="numeric"
                               placeholder="Duration"
@@ -215,7 +214,7 @@ export default function CreateWorkout() {
                               onChange={(e) =>
                                 onChangeField(ex.id, "duration_seconds", e.target.value)
                               }
-                            />
+                            /> */}
                           </div>
                         </div>
                       )}

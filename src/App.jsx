@@ -8,6 +8,8 @@ import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoutes";
 import Profile from "./pages/Profile";
 import EditWorkout from "./pages/EditWorkout.jsx";
+import Home from "./pages/Home.jsx";
+import MyWorkouts from "./pages/MyWorkouts.jsx";
 
 export default function App() {
   return (
@@ -17,6 +19,23 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-workouts"
+            element={
+              <ProtectedRoute>
+                <MyWorkouts />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/workouts"

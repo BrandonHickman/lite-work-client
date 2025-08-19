@@ -6,12 +6,12 @@ import {
   getWorkout,
   addExercisesToWorkout,
   getWorkoutMuscleGroups,
+  updateWorkout,
 } from "../services/workoutService";
 import {
   deleteWorkoutExercise,
   listWorkoutExercises,
 } from "../services/workoutExerciseService";
-
 
 export default function EditWorkout() {
   const { id } = useParams();
@@ -20,6 +20,8 @@ export default function EditWorkout() {
   const [workout, setWorkout] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [rows, setRows] = useState([]);
   const [muscleIds, setMuscleIds] = useState([]);
   const [exercises, setExercises] = useState([]);
@@ -37,9 +39,13 @@ export default function EditWorkout() {
           getWorkoutMuscleGroups(id).catch(() => []),
         ]);
         if (!mounted) return;
+
         setWorkout(wk);
         setRows(wes || []);
         setMuscleIds((groups || []).map((g) => g.id));
+
+        setTitle(wk?.title ?? "");
+        setDescription(wk?.description ?? "");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -87,16 +93,36 @@ export default function EditWorkout() {
     }
   };
 
-  const onSaveAndStart = async () => {
-    if (pickedIds.length) {
-      setSaving(true);
-      try {
-        await addExercisesToWorkout(id, pickedIds);
-      } finally {
-        setSaving(false);
-      }
+  const onSaveMeta = async () => {
+    if (!title.trim()) {
+      alert("Title is required.");
+      return;
     }
-    nav(`/workouts/${id}`);
+    setSaving(true);
+    try {
+      const updated = await updateWorkout(id, { title, description });
+      setWorkout(updated);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const onSaveAndStart = async () => {
+    setSaving(true);
+    try {
+      if (
+        title.trim() !== (workout?.title ?? "") ||
+        (description ?? "") !== (workout?.description ?? "")
+      ) {
+        await updateWorkout(id, { title, description });
+      }
+      if (pickedIds.length) {
+        await addExercisesToWorkout(id, pickedIds);
+      }
+      nav(`/workouts/${id}`);
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading)
@@ -107,13 +133,41 @@ export default function EditWorkout() {
   return (
     <div className="container page-content">
       <div className="page-card">
-        <div className="flex items-center justify-between">
-          <h1>Edit Workout</h1>
-          <div className="text-sm muted">{workout.date}</div>
-        </div>
-        {!!workout.description && <p className="mt-2">{workout.description}</p>}
-      </div>
+        <h1 className="mb-4">Edit Workout</h1>
 
+        <div className="grid gap-4">
+          <div>
+            <label className="text-sm mb-2 block">Title</label>
+            <input
+              className="input"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Push Day, Legs, Full Body"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm mb-2 block">Description (optional)</label>
+            <textarea
+              className="input"
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Notes for this workout…"
+            />
+          </div>
+
+          <div className="flex gap-2 justify-end">
+            <button
+              className="button secondary"
+              onClick={onSaveMeta}
+              disabled={saving}
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
       <div className="page-card">
         <h2 className="mb-4">Current exercises</h2>
         {rows.length === 0 ? (
@@ -146,7 +200,6 @@ export default function EditWorkout() {
           </ul>
         )}
       </div>
-
       <MuscleSelection selected={muscleIds} onChange={setMuscleIds} />
 
       <div className="page-card">

@@ -2,6 +2,7 @@
   background: var(--card);
   border-bottom: 1px solid var(--border);
 }
+
 .nav__inner {
   max-width: 960px;
   margin: 0 auto;
@@ -47,7 +48,6 @@
   background: color-mix(in srgb, var(--btn-bg) 10%, transparent);
 }
 
-/* Profile dropdown */
 .profile {
   position: relative;
 }

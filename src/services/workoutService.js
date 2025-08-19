@@ -1,5 +1,10 @@
 import { fetchWithoutResponse, fetchWithResponse } from "./fetcher";
 
+const authHeader = () => {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Token ${token}` } : {};
+};
+
 export function getWorkouts() {
   return fetchWithResponse("workouts");
 }
@@ -42,4 +47,12 @@ export function repeatWorkout(id) {
 
 export function getWorkoutMuscleGroups(workoutId) {
   return fetchWithResponse(`workouts/${workoutId}/muscle-groups`);
+}
+
+export function updateWorkout(id, payload) {
+  return fetchWithResponse(`workouts/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify(payload),
+  });
 }

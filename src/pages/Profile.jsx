@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getMyProfile, updateMyProfile, uploadAvatar } from "../services/profileService";
-import { getWorkouts, deleteWorkout, repeatWorkout } from "../services/workoutService";
+import { getWorkouts, deleteWorkout } from "../services/workoutService";
 import { getHeatmap } from "../services/analyticsService";
+import { getWorkout } from "../services/workoutService";
+import { listWorkoutExercises } from "../services/workoutExerciseService";
+import { listSetsForWorkoutExercise } from "../services/workoutSetService";
 
 export default function Profile() {
   const nav = useNavigate();
@@ -11,10 +14,13 @@ export default function Profile() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [heatmap, setHeatmap] = useState({});
 
-
   const [workouts, setWorkouts] = useState(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const [viewOpen, setViewOpen] = useState(false);
+  const [viewWorkout, setViewWorkout] = useState(null);
+  const [viewRows, setViewRows] = useState([]);
+
 
   useEffect(() => {
     let mounted = true;
@@ -37,12 +43,7 @@ export default function Profile() {
     return () => (mounted = false);
   }, []);
 
-
-  const completed = useMemo(
-    () => (workouts || []).filter((w) => w.completed),
-    [workouts]
-  );
-
+  const completed = useMemo(() => (workouts || []).filter((w) => w.completed), [workouts]);
 
   const completedLast30 = useMemo(() => {
     const cutoff = new Date();
@@ -118,9 +119,35 @@ export default function Profile() {
     }
   };
 
-  const onRepeatAndEdit = async (id) => {
-    const w = await repeatWorkout(id);
-    nav(`/workouts/${w.id}/edit`);
+  const onEditWorkout = (id) => {
+    nav(`/workouts/${id}/edit`);
+  };
+
+
+  const onViewWorkout = async (id) => {
+    setViewWorkout(null);
+    setViewRows([]);
+    setViewOpen(true);
+    try {
+      const wk = await getWorkout(id);
+      const wes = await listWorkoutExercises(id);
+      const setsLists = await Promise.all((wes || []).map((we) => listSetsForWorkoutExercise(we.id)));
+      const rows = (wes || []).map((we, idx) => ({
+        we,
+        sets: (setsLists[idx] ?? []).sort((a, b) => a.index - b.index || a.id - b.id),
+      }));
+      setViewWorkout(wk);
+      setViewRows(rows);
+    } catch (e) {
+      setViewOpen(false);
+      alert("Failed to load workout details.");
+    }
+  };
+
+  const closeView = () => {
+    setViewOpen(false);
+    setViewWorkout(null);
+    setViewRows([]);
   };
 
 
@@ -130,25 +157,19 @@ export default function Profile() {
     for (let i = n - 1; i >= 0; i--) {
       const d = new Date(today);
       d.setDate(today.getDate() - i);
-      const iso = d.toISOString().slice(0, 10);
-      days.push(iso);
+      days.push(d.toISOString().slice(0, 10));
     }
     return days;
   }
-
   const days = useMemo(() => getPastDates(365), []);
-  const maxCount = useMemo(
-    () => Math.max(1, ...Object.values(heatmap || {})),
-    [heatmap]
-  );
-
+  const maxCount = useMemo(() => Math.max(1, ...Object.values(heatmap || {})), [heatmap]);
   const colorFor = (count) => {
-    if (!count) return "#e5e7eb"; // light gray
-    const t = count / maxCount; // 0..1
-    if (t < 0.25) return "#d1fae5"; // green-100
-    if (t < 0.5) return "#a7f3d0";  // green-200
-    if (t < 0.75) return "#6ee7b7"; // green-300
-    return "#34d399";               // green-400
+    if (!count) return "#e5e7eb";
+    const t = count / maxCount;
+    if (t < 0.25) return "#d1fae5";
+    if (t < 0.5) return "#a7f3d0";
+    if (t < 0.75) return "#6ee7b7";
+    return "#34d399";
   };
 
   if (loading) return <div className="container page-content">Loading profile…</div>;
@@ -242,9 +263,7 @@ export default function Profile() {
       <div className="page-card">
         <div className="flex items-center justify-between mb-6">
           <h2>Challenge</h2>
-          <Link className="button" to="/workouts/create">
-            + New Workout
-          </Link>
+          <Link className="button" to="/workouts/create">+ New Workout</Link>
         </div>
 
         {goal ? (
@@ -279,14 +298,10 @@ export default function Profile() {
               <div className="text-lg" style={{ fontWeight: 700 }}>
                 {completedLast30.length}/{goal} workouts in the last 30 days
               </div>
-              <div className="text-sm muted">
-                Progress updates automatically as you complete workouts.
-              </div>
+              <div className="text-sm muted">Progress updates automatically as you complete workouts.</div>
 
               <div className="flex gap-2 mt-3">
-                <button className="button" onClick={onCreateOrUpdateChallenge}>
-                  Edit
-                </button>
+                <button className="button" onClick={onCreateOrUpdateChallenge}>Edit</button>
                 <button className="button secondary" onClick={onDeleteChallenge} disabled={savingProfile}>
                   Delete
                 </button>
@@ -296,9 +311,7 @@ export default function Profile() {
         ) : (
           <div className="flex items-center justify-between">
             <div className="text-sm muted">No challenge yet—set a goal for the next 30 days.</div>
-            <button className="button" onClick={onCreateOrUpdateChallenge}>
-              Create challenge
-            </button>
+            <button className="button" onClick={onCreateOrUpdateChallenge}>Create challenge</button>
           </div>
         )}
       </div>
@@ -346,6 +359,9 @@ export default function Profile() {
                     <div>
                       <div className="text-base" style={{ fontWeight: 700 }}>{w.title}</div>
                       <div className="text-sm muted">{w.date}</div>
+                      {!!w.description && (
+                        <div className="text-xs muted" style={{ marginTop: 4 }}>{w.description}</div>
+                      )}
                       {!!w.exercise_names?.length && (
                         <div className="text-xs muted" style={{ marginTop: 4 }}>
                           {w.exercise_names.join(" • ")}
@@ -353,8 +369,11 @@ export default function Profile() {
                       )}
                     </div>
                     <div className="flex gap-2">
-                      <button className="button" onClick={() => onRepeatAndEdit(w.id)} disabled={deleting}>
-                        Edit / Repeat
+                      <button className="button secondary" onClick={() => onViewWorkout(w.id)}>
+                        View
+                      </button>
+                      <button className="button" onClick={() => onEditWorkout(w.id)}>
+                        Edit
                       </button>
                       <button className="button secondary" onClick={() => onDeleteWorkout(w.id)} disabled={deleting}>
                         Delete
@@ -366,6 +385,68 @@ export default function Profile() {
           </ul>
         )}
       </div>
+
+      {viewOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={closeView}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            display: "grid",
+            placeItems: "center",
+            padding: 16,
+            zIndex: 1000,
+          }}
+        >
+          <div
+            className="page-card"
+            onClick={(e) => e.stopPropagation()}
+            style={{ width: "min(800px, 95vw)", maxHeight: "85vh", overflow: "auto", padding: 16 }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <div className="text-lg" style={{ fontWeight: 700 }}>
+                  {viewWorkout?.title ?? "Workout"}
+                </div>
+                <div className="text-sm muted">{viewWorkout?.date}</div>
+              </div>
+              <button className="button secondary" onClick={closeView}>Close</button>
+            </div>
+            {!!viewWorkout?.description && (
+              <p className="text-sm" style={{ marginBottom: 12 }}>{viewWorkout.description}</p>
+            )}
+
+            {(viewRows || []).length === 0 ? (
+              <div className="text-sm muted">No exercises.</div>
+            ) : (
+              <ul className="grid grid-cols-1 gap-2">
+                {viewRows.map(({ we, sets }) => (
+                  <li key={we.id} className="page-card" style={{ padding: "1rem" }}>
+                    <div className="text-base" style={{ fontWeight: 700 }}>
+                      {we.exercise_name ?? `Exercise #${we.exercise}`}
+                    </div>
+                    {sets.length === 0 ? (
+                      <div className="text-sm muted">No sets recorded.</div>
+                    ) : (
+                      <ul className="grid grid-cols-1 gap-1" style={{ marginTop: 8 }}>
+                        {sets.map((s) => (
+                          <li key={s.id} className="text-sm">
+                            <strong>Set {s.index}:</strong>{" "}
+                            Reps: {s.reps ?? "—"} • Weight: {s.weight ?? "—"} • Duration (sec): {s.duration_seconds ?? "—"}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -5,7 +5,7 @@ export function listWorkoutExercises(workoutId) {
 }
 
 
-export function getWorkoutExercise(id) {
+export function getWorkoutExercises(id) {
   return fetchWithResponse(`workout-exercises/${id}`);
 }
 
