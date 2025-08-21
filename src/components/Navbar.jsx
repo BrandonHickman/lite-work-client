@@ -59,12 +59,10 @@ export default function Navbar() {
   return (
     <header className="nav">
       <div className="nav__inner">
-        {/* Brand */}
         <Link to="/" className="nav__brand">
           LiteWork
         </Link>
 
-        {/* Left-side links (only when logged in) */}
         {token && (
           <div className="nav__leftlinks">
             <NavLink to="/workouts" className="nav__link">
@@ -76,7 +74,6 @@ export default function Navbar() {
           </div>
         )}
 
-        {/* Right-side controls */}
         <nav className="nav__right">
           <button
             className="nav__iconbtn"

@@ -51,7 +51,7 @@ export default function Home() {
       completed
         .slice()
         .sort((a, b) => (a.date < b.date ? 1 : -1))
-        .slice(0, 10),
+        .slice(0, 5),
     [completed]
   );
 
@@ -132,7 +132,7 @@ export default function Home() {
                 </div>
               </>
             ) : (
-              <div className="text-sm muted">No challenge set yet—configure it in your profile.</div>
+              <div className="text-sm muted">No challenge set yet.</div>
             )}
           </div>
         </div>

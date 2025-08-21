@@ -8,7 +8,6 @@ const checkError = (res) => {
 const checkErrorJson = (res) => checkError(res).json();
 
 const catchError = (err) => {
-  // basic redirect on unauthorized
   if (err.message === '401') {
     window.location.href = "/login";
     return;
@@ -21,12 +20,17 @@ const catchError = (err) => {
 };
 
 // Auto-merge headers + include token if present
-function buildHeaders(extra = {}) {
+function buildHeaders(extra = {}, body) {
   const token = (() => {
     try { return localStorage.getItem("token"); } catch { return null; }
   })();
+
+  // Only set JSON content-type if NOT sending FormData
+  const contentType =
+    body instanceof FormData ? {} : { "Content-Type": "application/json" };
+
   return {
-    "Content-Type": "application/json",
+    ...contentType,
     ...(token ? { Authorization: `Token ${token}` } : {}),
     ...extra,
   };
@@ -36,7 +40,7 @@ function buildHeaders(extra = {}) {
 export const fetchWithResponse = (resource, options = {}) =>
   fetch(`${API_BASE}/${resource}`, {
     ...options,
-    headers: buildHeaders(options.headers),
+    headers: buildHeaders(options.headers, options.body),
   })
     .then(checkErrorJson)
     .catch(catchError);
@@ -44,7 +48,7 @@ export const fetchWithResponse = (resource, options = {}) =>
 export const fetchWithoutResponse = (resource, options = {}) =>
   fetch(`${API_BASE}/${resource}`, {
     ...options,
-    headers: buildHeaders(options.headers),
+    headers: buildHeaders(options.headers, options.body),
   })
     .then(checkError)
     .catch(catchError);

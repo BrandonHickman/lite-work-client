@@ -23,7 +23,7 @@ export default function Register() {
     e.preventDefault();
     setErr(null);
 
-    // simple client-side validation
+
     if (!form.username || !form.email || !form.password || !form.first_name || !form.last_name) {
       setErr('Please fill in all required fields.');
       return;
@@ -42,10 +42,8 @@ export default function Register() {
         email: form.email.trim(),
         password: form.password,
       });
-      // token is saved in authService.register; go straight to workouts
       nav('/workouts');
     } catch (e) {
-      // e.message may be a status or a stringified error
       setErr('Registration failed. Try a different username/email.');
     } finally {
       setLoading(false);

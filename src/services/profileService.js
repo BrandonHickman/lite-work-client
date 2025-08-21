@@ -1,26 +1,22 @@
 import { fetchWithResponse } from "./fetcher";
 
 export function getMyProfile() {
-  return fetchWithResponse("profile");
+  return fetchWithResponse("profile/me");
 }
 
-export function updateMyProfile(patch) {
-  return fetchWithResponse("profile", {
+export function updateMyProfile(payload) {
+  return fetchWithResponse(`profile/me`, {
     method: "PATCH",
-    body: JSON.stringify(patch),
+    body: JSON.stringify(payload),
   });
 }
 
-export async function uploadAvatar(file) {
-  const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000';
-  const token = localStorage.getItem("token");
+export function uploadAvatar(file) {
   const form = new FormData();
   form.append("avatar", file);
-  const res = await fetch(`${API_BASE}/profile/avatar/`, {
+
+  return fetchWithResponse("profile/avatar", {
     method: "POST",
-    headers: token ? { Authorization: `Token ${token}` } : {},
     body: form,
   });
-  if (!res.ok) throw Error(String(res.status));
-  return res.json();
 }

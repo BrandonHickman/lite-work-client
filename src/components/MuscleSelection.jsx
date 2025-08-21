@@ -51,8 +51,7 @@ export default function MuscleSelection({ selected, onChange }) {
         })}
       </div>
       <p className="mt-4 text-sm muted">
-        Tip: you can select multiple groups — we’ll show exercises that hit any
-        of them.
+        Tip: Selecting muscle group(s) will filter the exercises!
       </p>
     </div>
   );
